@@ -9,78 +9,100 @@ import java.lang.Math;
  **/
 class Player {
 
+    private int x;
+    private int y;
+    private int nextCheckpointX; // x position of the next check point
+    private int nextCheckpointY; // y position of the next check point
+    private int nextCheckpointDist; // distance to the next checkpoint
+    private int nextCheckpointAngle; // angle between your pod orientation and the direction of the next checkpoint
+    private int opponentX;
+    private int opponentY;
+    
+    private int beforeX;
+    private int beforeY;
+    
+    private boolean isAfterPeak = false;
+    private boolean hasBoost = true;
+    
+    // 다음 동작을 위한 값
+    private int destinationX;
+    private int destinationY;
+    private int force;
+    private String thrust;
+    
+    public void move() {
+        beforeX = x;
+        beforeY = y;
+        
+        // Write an action using System.out.println()
+        System.out.println(destinationX + " " + destinationY + " " + thrust);
+    }
+    
+    public void decisionNextMove() {
+        // You have to output the target position
+        // // followed by the power (0 <= thrust <= 100) or "BOOST" or "SHIELD"
+        // // i.e.: "x y thrust"
+        
+        // default moving value
+        destinationX = nextCheckpointX;
+        destinationY = nextCheckpointY;
+        force = 100;
+        
+        double rad = Math.toRadians(nextCheckpointAngle);
+        
+        // normal moving
+        if (nextCheckpointAngle < 90) {
+            // pod이 다음 checkpoint에 가장 가까이 접근할 수 있는 최적의 thrust, 단, 관성은 고려하지 않았다.
+            double perfectForce = nextCheckpointDist * Math.cos(rad) * 0.15;
+            if (perfectForce > 100) {
+                force = 100;
+            } else if (perfectForce < 0) {
+                force = 0;
+            } else {
+                force = (int) perfectForce;
+            }
+        } else {
+            force = 0;
+        }
+        thrust = String.valueOf(force);
+        
+        // a case to boost
+        if (hasBoost && nextCheckpointDist > 3000 && nextCheckpointAngle == 0) {
+            thrust = "BOOST";
+            hasBoost = false;
+        }
+    }
+    
+    public void log() {
+        // To debug: System.err.println("Debug messages...");
+        double moved = Math.sqrt(Math.pow(x-beforeX, 2) + Math.pow(y-beforeY, 2));
+        System.err.println("Debug messages : x = " + x + ", y = " + y);
+        System.err.println("Debug messages : moved = " + moved);
+        System.err.println("Debug messages : Angle = " + nextCheckpointAngle);
+    }
+    
     public static void main(String args[]) {
         Scanner in = new Scanner(System.in);
         
-        int beforeX = 0;
-        int beforeY = 0;
-        int curX = 0;
-        int curY = 0;
-        boolean isAfterPeak = false;
-        boolean hasBoost = true;
+        Player p = new Player();
 
         // game loop
         while (true) {
-            int x = in.nextInt();
-            int y = in.nextInt();
-            int nextCheckpointX = in.nextInt(); // x position of the next check point
-            int nextCheckpointY = in.nextInt(); // y position of the next check point
-            int nextCheckpointDist = in.nextInt(); // distance to the next checkpoint
-            int nextCheckpointAngle = in.nextInt(); // angle between your pod orientation and the direction of the next checkpoint
-            int opponentX = in.nextInt();
-            int opponentY = in.nextInt();
+            p.x = in.nextInt();
+            p.y = in.nextInt();
+            p.nextCheckpointX = in.nextInt(); // x position of the next check point
+            p.nextCheckpointY = in.nextInt(); // y position of the next check point
+            p.nextCheckpointDist = in.nextInt(); // distance to the next checkpoint
+            p.nextCheckpointAngle = in.nextInt(); // angle between your pod orientation and the direction of the next checkpoint
+            p.opponentX = in.nextInt();
+            p.opponentY = in.nextInt();
             
-            // default moving value
-            int aimX = nextCheckpointX;
-            int aimY = nextCheckpointY;
-            String thrust = "100";
+            p.log();
             
-            double rad = Math.toRadians(nextCheckpointAngle);
-            
-            // debug
-            beforeX = curX;
-            beforeY = curY;
-            curX = x;
-            curY = y;
-            double moved = Math.sqrt(Math.pow(curX-beforeX, 2) + Math.pow(curY-beforeY, 2));
-            
-            nextCheckpointAngle = Math.abs(nextCheckpointAngle);
-            
-
-            // Write an action using System.out.println()
-            // To debug: System.err.println("Debug messages...");
-            System.err.println("Debug messages : x = " + x + ", y = " + y);
-            System.err.println("Debug messages : moved = " + moved);
-            System.err.println("Debug messages : Angle = " + nextCheckpointAngle);
-
-
-            // You have to output the target position
-            // followed by the power (0 <= thrust <= 100) or "BOOST" or "SHIELD"
-            // i.e.: "x y thrust"
-            
-            // normal moving
-            if (nextCheckpointAngle < 90) {
-                // pod이 다음 checkpoint에 가장 가까이 접근할 수 있는 최적의 thrust, 단, 관성은 고려하지 않았다.
-                double perfectThrust = nextCheckpointDist * Math.cos(rad) * 0.15;
-                if (perfectThrust > 100) {
-                    thrust = "100";
-                } else if (perfectThrust < 0) {
-                    thrust = "0";
-                } else {
-                    thrust = String.valueOf((int) perfectThrust);
-                }
-            } else {
-                thrust = "0";
-            }
-            
-            // a case to boost
-            if (hasBoost && nextCheckpointDist > 3000 && nextCheckpointAngle == 0) {
-                thrust = "BOOST";
-                hasBoost = false;
-            }
+            p.decisionNextMove();
             
             // move
-            System.out.println(aimX + " " + aimY + " " + " " + thrust);
+            p.move();
         }
     }
 }
