@@ -35,6 +35,8 @@ class Player {
             int aimY = nextCheckpointY;
             String thrust = "100";
             
+            double rad = Math.toRadians(nextCheckpointAngle);
+            
             // debug
             beforeX = curX;
             beforeY = curY;
@@ -49,6 +51,7 @@ class Player {
             // To debug: System.err.println("Debug messages...");
             System.err.println("Debug messages : x = " + x + ", y = " + y);
             System.err.println("Debug messages : moved = " + moved);
+            System.err.println("Debug messages : Angle = " + nextCheckpointAngle);
 
 
             // You have to output the target position
@@ -56,14 +59,22 @@ class Player {
             // i.e.: "x y thrust"
             
             // normal moving
-            if (nextCheckpointAngle > 90) {
-                thrust = "10";
+            if (nextCheckpointAngle < 90) {
+                // pod이 다음 checkpoint에 가장 가까이 접근할 수 있는 최적의 thrust, 단, 관성은 고려하지 않았다.
+                double perfectThrust = nextCheckpointDist * Math.cos(rad) * 0.15;
+                if (perfectThrust > 100) {
+                    thrust = "100";
+                } else if (perfectThrust < 0) {
+                    thrust = "0";
+                } else {
+                    thrust = String.valueOf((int) perfectThrust);
+                }
             } else {
-                thrust = "100";
+                thrust = "0";
             }
             
             // a case to boost
-            if (hasBoost && nextCheckpointDist > 5000 && nextCheckpointAngle == 0) {
+            if (hasBoost && nextCheckpointDist > 3000 && nextCheckpointAngle == 0) {
                 thrust = "BOOST";
                 hasBoost = false;
             }
